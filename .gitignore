@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Zur Laufzeit generierte Platzhalterfotos der Galerie-Simulation
+software/cyberdeck/assets/sample_photos/*.png
