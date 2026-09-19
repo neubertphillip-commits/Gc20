@@ -28,6 +28,13 @@ bieten) zu einem funktionsfähigen Mini-Cyberdeck auf Basis eines
   4. **Claude-Assistent** – direkte Anbindung an die Claude-API, u. a. um
      mit der Kamera fotografierte Dokumente/Notizen auswerten zu lassen
 - Akkubetrieb, Ladung über USB-C
+- Raspberry Pi OS Lite (Terminal) oder minimaler Desktop, Fokus auf
+  Retro-/Terminal-Ästhetik statt Vollwertigkeit
+- Wenn möglich: Originaltastatur des Rechners als Eingabegerät weiterverwenden
+  (das ist der optisch und thematisch spannendste Teil des Umbaus)
+- Akkubetrieb, Ladung über USB-C
+- **Kamera** für Foto/Video bzw. Webcam-Funktion (z. B. für Videocalls,
+  QR-Codes scannen, einfache Bildverarbeitung) – siehe Kap. 7
 - Nice-to-have: Original-Batteriefach als Ladeport/Schalter-Attrappe nutzen
 
 ## 2. Gehäusewahl: fx-CG20 vs. fx-CG50
@@ -65,6 +72,7 @@ Antennenbereich. Realistische Engpässe:
    die sollte nicht direkt unter/neben Metall (Batteriekontakte!) liegen,
    sonst leidet WLAN/BT-Reichweite spürbar (wichtig, da die Claude-Anbindung
    ohne WLAN nicht funktioniert).
+   sonst leidet WLAN/BT-Reichweite spürbar.
 3. **Display-Anschluss**: Ein kleines Display (siehe Kap. 5) braucht meist
    einen FPC- oder Pfostenstecker, der zusätzliche Höhe braucht.
 4. **Akku**: LiPo-Pouch-Zellen sind flach und lassen sich gut in
@@ -73,6 +81,8 @@ Antennenbereich. Realistische Engpässe:
    knickempfindlich – bei rückseitiger Montage (siehe Kap. 7) muss es quer
    durchs Gehäuse zur Rückschale geführt werden, ohne die Hauptplatine oder
    die Tastaturmatrix zu blockieren.
+   knickempfindlich – die Kameraplatine muss nah am Pi verbaut werden bzw.
+   ein längeres/dünneres Zero-Kamerakabel eingeplant werden (siehe Kap. 7).
 
 Realistischer Ansatz: Nicht versuchen, alles "unsichtbar" reinzuquetschen,
 sondern **Gehäuse minimal modifizieren** (Rückseite an einer Stelle
@@ -101,6 +111,19 @@ nachdem ob PiSugar (teurer, aber komfortabel) oder Eigenbau-Powerbank-Lösung,
 und welches Kameramodul gewählt wird. Dazu kommen **laufende Kosten für die
 Claude-API** (siehe Kap. 9.4) – die fallen nur bei tatsächlicher Nutzung an,
 nicht im Standby.
+| SBC | Raspberry Pi Zero 2 W | WLAN/BT integriert |
+| Speicher | microSD 32–64 GB (A1/A2) | hochwertige Karte, Lite-OS reicht klein |
+| Display | 2,4"–3,5" SPI-TFT (z. B. Waveshare, ILI9341/ST7789) oder das Original-LCD, falls ansteuerbar | Original-LCD ansteuern ist sehr aufwendig (proprietärer Controller, kaum dokumentiert) → **Empfehlung: kleines SPI-TFT einbauen**, das ungefähr in die alte Displayöffnung passt |
+| Tastatur | Original-Tastenmatrix + eigener Matrix-Scanner (z. B. über GPIO + Software wie `matrix-keyboard`/Custom-Python-Daemon, oder ein kleiner Mikrocontroller wie ATtiny/Pi Pico als USB-HID-Keyboard-Adapter) | siehe Kap. 6 |
+| Strom | LiPo-Akku 1000–2000 mAh + Lade-/Boost-Platine (z. B. PiSugar 2/3 für Zero, oder TP4056 + separater 5V-Boost-Converter) | PiSugar ist am wartungsärmsten (Laden, Boost, Ein/Aus-Knopf in einem) |
+| Kamera | Raspberry Pi Camera Module 3 (Autofokus) oder kompaktere/günstigere Alternative (z. B. Arducam-Mini-Modul mit OV5647/IMX219) | braucht das **Pi-Zero-spezifische CSI-Kabel** (schmalerer 22-auf-15-Pin-Stecker als beim normalen Pi) – siehe Kap. 7 |
+| Audio (optional) | kleiner I2S-DAC/Verstärker (z. B. MAX98357A) + Mini-Lautsprecher | Pi Zero hat keinen analogen Audio-Ausgang |
+| Kühlung | keine aktive Kühlung nötig, ggf. dünnes Kupfer-Shim auf dem SoC | Pi Zero 2 W wird bei Dauerlast handwarm |
+| Sonstiges | dünne JST-Kabel, Kapton-Tape, ggf. 3D-gedrucktes Halterahmen für Display/Pi/Kamera | FDM-Druck reicht |
+
+Geschätzte Kosten (ohne vorhandene Werkzeuge): **70–110 €**, je nachdem ob
+PiSugar (teurer, aber komfortabel) oder Eigenbau-Powerbank-Lösung, und
+welches Kameramodul gewählt wird.
 
 ## 5. Display-Optionen
 
@@ -115,6 +138,8 @@ nicht im Standby.
 3. **E-Ink** – stromsparend, aber zu träge für ein interaktives Menü und für
    den Kamera-/Galerie-Anwendungsfall ungeeignet (kein Live-Preview beim
    Fotografieren) – daher hier nicht empfohlen.
+3. **E-Ink** – stromsparend, aber zu träge für ein interaktives Terminal;
+   höchstens als sekundäres Status-Display sinnvoll.
 
 ## 6. Tastatur: Original-Matrix vs. Fertiglösung
 
@@ -134,6 +159,7 @@ Flex-Folie, kontaktiert über eine Folienleiste). Zwei realistische Wege:
   Terminal-/Anwendungstasten legen (z. B. SHIFT+Zahl → Sonderzeichen,
   EXE → Enter, ALPHA → Buchstabenebene für Texteingabe, MENU → zurück zum
   Hauptmenü)
+  Terminal-Tasten legen (z. B. SHIFT+Zahl → Sonderzeichen, EXE → Enter)
 
 **B) Fertige Mini-Tastatur einbauen (einfacher, weniger "Original")**
 - z. B. ausgeschlachtete BlackBerry-Tastatur oder ein fertiges I2C/USB-
@@ -142,20 +168,9 @@ Flex-Folie, kontaktiert über eine Folienleiste). Zwei realistische Wege:
   als "es funktioniert bald"
 
 **Empfehlung:** Variante A mit Pi Pico als USB-HID-Adapter – guter Kompromiss
-aus Aufwand und Ergebnis, und der Pico kostet nur ein paar Euro. Wichtig für
-Kap. 8/9: Die Original-Tastatur hat (wie beim fx-CG50 üblich) eine
-**ALPHA-Ebene** mit Buchstaben auf den Tasten – die lässt sich in der Keymap
-für Texteingabe (z. B. Dateinamen, kurze Fragen an Claude) wiederverwenden.
+aus Aufwand und Ergebnis, und der Pico kostet nur ein paar Euro.
 
 ## 7. Kamera-Integration
-
-**Entscheidung: Kamera wird rückseitig verbaut.** Damit fällt die
-Webcam-/Videocall-Nutzung als Ziel weg – der Fokus liegt stattdessen auf
-**Dokumente/Notizen fotografieren** und direkt im Gerät weiterverarbeiten
-(Galerie, Dokumentenbrowser, Claude-Anbindung, siehe Kap. 9). Das passt gut
-zusammen: Rechner hochklappen bzw. umdrehen entfällt, weil man beim
-Fotografieren ohnehin nicht gleichzeitig aufs Display schaut wie bei einer
-Webcam – die Rückseite ist für diesen Zweck ergonomisch sogar sinnvoller.
 
 Der Pi Zero 2 W hat einen eigenen, kleineren **CSI-Kameraanschluss** (nicht
 kompatibel mit dem Standard-Kamerakabel des "großen" Pi) – dafür braucht man
@@ -164,12 +179,11 @@ zusätzlich zum eigentlichen Kameramodul.
 
 **Modulwahl:**
 1. **Raspberry Pi Camera Module 3** – aktuelle, offiziell unterstützte Wahl
-   mit Autofokus – für das Fotografieren von Dokumenten/Text ist Autofokus
-   klar von Vorteil (schärfere Fotos → bessere Ergebnisse in Kap. 9.4).
+   mit Autofokus, aber Platine/Gehäuse etwas größer.
 2. **Kompaktere Drittanbieter-Module** (z. B. Arducam-Mini-Boards mit
-   OV5647/IMX219-Sensor) – kleinere Grundfläche, meist Festfokus. Nur
-   empfehlenswert, wenn der Platz in der Rückschale wirklich nicht für
-   Modul 3 reicht.
+   OV5647/IMX219-Sensor) – kleinere Grundfläche, oft ohne Gehäuse, dadurch
+   leichter in einer 3D-gedruckten Halterung unterzubringen. Für dieses
+   Projekt aufgrund des begrenzten Platzes eher zu empfehlen als Modul 3.
 
 **Montage rückseitig:**
 - Kleine Bohrung/Fräsung in der Rückschale, an einer Stelle mit möglichst
@@ -182,17 +196,19 @@ zusätzlich zum eigentlichen Kameramodul.
   eingeklemmt wird
 
 **Software:** `libcamera`/`rpicam-apps` (in aktuellem Raspberry Pi OS
-enthalten), z. B. `rpicam-still` für Einzelfotos (Galerie/Claude-Workflow);
-Video wird für diesen Use-Case nicht gebraucht.
+enthalten), z. B. `rpicam-still`/`rpicam-vid` für Fotos/Video; für
+Videocalls oder eigene Anwendungen lässt sich der Kamera-Stream auch per
+`v4l2` in andere Tools einspeisen.
 
 **Zu beachten:**
-- Kamera-Kabel ist die zerbrechlichste Verbindung im Gehäuse – Zugentlastung
-  einplanen, nicht scharf knicken
-- Zusätzlicher Stromverbrauch beim Fotografieren + anschließendem
-  API-Call an Claude – bei der Akkukapazität (Kap. 4) etwas Puffer
-  einplanen (eher 2000 mAh als 1000 mAh)
-- Kleine Blendöffnung in der Rückschale so groß wie nötig, aber so klein wie
-  möglich schneiden – Streulicht/Kratzer auf der Linse vermeiden
+- Kamera-Kabel ist die zusätzliche Zwangsbedingung aus Kap. 3, Punkt 5 –
+  Kameraposition und Pi-Zero-Position im Gehäuse aufeinander abstimmen,
+  bevor die 3D-Halterung konstruiert wird.
+- Zusätzlicher Stromverbrauch bei aktiver Kamera/Videostreaming –
+  bei der Akkukapazität (Kap. 4) etwas Puffer einplanen (z. B. eher
+  2000 mAh statt 1000 mAh, wenn Video-Streaming ein häufiger Use-Case ist).
+- Kleine Blendöffnung im Gehäuse so groß wie nötig, aber so klein wie
+  möglich schneiden – Streulicht/Kratzer auf der Linse vermeiden.
 
 ## 7a. Befestigung ohne 3D-Drucker
 
@@ -215,110 +231,19 @@ an der sonst ein Halterahmen gedruckt würde.
 
 ## 8. Bedienkonzept: Menü-Navigation
 
-Da die Eingabemöglichkeiten begrenzt sind (Tastenmatrix statt Touch/Maus)
-und "wie im Original" ausdrücklich gewünscht ist, wird bewusst **kein**
-Desktop mit mehreren Fenstern gebaut, sondern eine einzige
-**Kiosk-Anwendung**, die sich wie das originale Casio-Menü verhält:
-
-- **Hauptmenü**: Icon-/Textliste mit den vier Apps aus Kap. 1
-  (Taschenrechner, Galerie, Dateien, Claude), Navigation mit den originalen
-  Pfeiltasten, Auswahl mit **EXE**
-- **Feste "MENU"-Taste**: bringt aus jeder App jederzeit zurück ins
-  Hauptmenü (genau wie beim Original-Gerät) – das nimmt die Komplexität aus
-  der Navigation, weil man sich nie "verlaufen" kann
-- Jede App läuft als eigener Screen/State **innerhalb desselben Prozesses**
-  (kein Fenstermanager, kein X11 nötig) – das ist sowohl näher am Original
-  als auch deutlich ressourcenschonender auf dem Pi Zero 2 W (512 MB RAM)
-
-**Technische Umsetzung:** Ein Python-Programm mit `pygame` (Framebuffer-
-/KMS-Ausgabe, kein Desktop nötig) als Dauer-Prozess, der beim Booten direkt
-startet (systemd-Service statt Login-Shell). Tastatureingaben kommen als
-normale HID-Events vom Pico-Adapter (Kap. 6) und werden dort nach Screen
-weitergereicht.
-
-## 9. Apps im Detail
-
-### 9.1 Taschenrechner
-
-- Reproduziert die originale Kernfunktion des Geräts (Grundrechenarten,
-  wissenschaftliche Funktionen, ggf. einfache Graphen)
-- Rechenkern z. B. mit `asteval` oder `sympy` (Python), keine eigene
-  Parser-Implementierung nötig
-- Tastenbelegung so nah wie möglich am Original halten (SHIFT/ALPHA-Ebenen
-  wie beim fx-CG50), damit sich das Gerät weiterhin wie ein Taschenrechner
-  bedienen lässt
-
-### 9.2 Galerie
-
-- Rasteransicht (Thumbnails) der Fotos aus `~/pictures/`, aufgenommen über
-  die rückseitige Kamera
-- Navigation mit Pfeiltasten, EXE öffnet Vollbildansicht
-- Direkt aus der Vollbildansicht heraus: Kurzbefehl "an Claude senden" →
-  springt in die Claude-App (Kap. 9.4) mit dem Foto als Kontext
-- Thumbnails vorab mit Pillow generieren und cachen (Pi Zero 2 W ist bei
-  Bildbearbeitung nicht besonders schnell – Live-Skalierung jedes Mal wäre
-  spürbar langsam)
-
-### 9.3 Dokumentenbrowser
-
-- Dateiliste (Text/Markdown/PDF) von der SD-Karte, z. B. `~/documents/`
-- Text/Markdown direkt anzeigen (einfacher Pager mit Scroll per Pfeiltasten)
-- PDFs vorab serverseitig/lokal mit `pdftoppm` bzw. `PyMuPDF` (`fitz`) in
-  Bilder rendern und seitenweise anzeigen – ein voller PDF-Renderer im
-  Framebuffer wäre für die Hardware zu schwergewichtig
-- Auch hier: Kurzbefehl "Frage Claude zu diesem Dokument" (Kap. 9.4)
-
-### 9.4 Claude-Assistent
-
-Kernidee, um die Texteingabe-Problematik zu umgehen (Tippen über die
-ALPHA-Tastenebene ist möglich, aber langsam): **"Scan & Frag"** als
-primärer Workflow.
-
-- **Scan & Frag**: Foto mit der Rückkamera aufnehmen (oder ein bestehendes
-  Foto aus der Galerie wählen) → wird zusammen mit einer kurzen, optionalen
-  Frage an die Claude-API geschickt → Antwort erscheint als scrollbarer Text
-  auf dem Display. Damit lassen sich z. B. handschriftliche Notizen,
-  Hausaufgaben-Zettel oder Diagramme direkt auswerten lassen, ohne viel
-  tippen zu müssen.
-- **Freitext-Chat** (optional, zweiter Modus): kurze Fragen über die
-  ALPHA-Tastenebene eintippen, für Fälle ohne Bildkontext
-- **Technisch**: offizielles Python-SDK (`anthropic`), Bild als Base64 in
-  der Anfrage (Vision-fähiges Modell nötig), Antwort per Streaming abrufen
-  und progressiv auf dem kleinen Display anzeigen (bessere gefühlte
-  Reaktionszeit als auf die komplette Antwort zu warten)
-- **Modellwahl**: Standardmäßig das aktuell leistungsfähigste Modell
-  (`claude-opus-5`); für dieses Gerät (Akkubetrieb, oft nur WLAN mit
-  mäßiger Bandbreite, primär kurze Scan-&-Frag-Anfragen) kann ein
-  kleineres/schnelleres Modell wie `claude-haiku-4-5` sinnvoller sein
-  (spürbar schnellere Antwort, geringere Kosten pro Anfrage) – das ist
-  letztlich eine Abwägung zwischen Qualität und Geschwindigkeit/Kosten, die
-  du selbst triffst; beide sind über dieselbe API ansteuerbar
-- **API-Key**: lokal in einer Konfigurationsdatei speichern
-  (z. B. `~/.config/cyberdeck/claude_api_key`, Zugriffsrechte `600`),
-  niemals im Klartext im Quellcode oder in der Git-Historie
-- **Netzwerkabhängigkeit**: Ohne WLAN funktioniert nur diese eine App nicht
-  – Rechner, Galerie und Dokumentenbrowser laufen komplett offline weiter.
-  Die App sollte einen fehlenden Netzwerkzugriff klar anzeigen statt einfach
-  zu hängen
-- **Kosten**: fallen nur pro tatsächlicher Anfrage an (nutzungsabhängig,
-  keine Fixkosten im Standby) – bei gelegentlicher Nutzung im
-  Cent-Bereich pro Anfrage, planbar über die reguläre Anthropic-Abrechnung
-
-## 10. Technischer Software-Stack
-
-- **Raspberry Pi OS Lite (64-bit)** als Basis, kein Desktop-Environment
-- Kiosk-App (Kap. 8/9) startet per systemd-Service direkt nach dem Boot,
-  läuft im Framebuffer/KMS ohne X11
-- WLAN vorkonfigurieren (`raspi-config` headless per
-  `wpa_supplicant.conf`/NetworkManager) – Pflicht für Kap. 9.4
+- **Raspberry Pi OS Lite (64-bit)** als Basis
+- Boot direkt in ein Terminal-UI, z. B.:
+  - `tmux` + Shell als "Startbildschirm"
+  - oder ein Retro-Menü (z. B. selbstgeschriebenes `dialog`/`whiptail`-Menü,
+    oder Tools wie `bashtop`, `cool-retro-term` falls X11 doch läuft)
+- WLAN/Bluetooth vorkonfigurieren (`raspi-config` headless per
+  `wpa_supplicant.conf`/NetworkManager)
 - Display-Treiber (fbcp-ili9341 oder passenden DRM-Treiber je nach TFT)
-- USB-HID-Tastatur (Pico-Adapter aus Kap. 6) braucht keinen Treiber – wird
+- USB-HID-Tastatur (falls Variante A/Pico) braucht keinen Treiber – wird
   vom Kernel als normale Tastatur erkannt
-- Kamera-Support über `libcamera`/`rpicam-apps` (Kap. 7)
-- Python-Abhängigkeiten: `pygame`, `Pillow`, `PyMuPDF`, `asteval`/`sympy`,
-  `anthropic` (offizielles Claude-SDK)
+- Kamera-Support über `libcamera`/`rpicam-apps` (siehe Kap. 7)
 
-## 11. Mechanischer Bauablauf (grober Fahrplan)
+## 9. Mechanischer Bauablauf (grober Fahrplan)
 
 1. Spender-Rechner zerlegen, alle Teile fotografieren/dokumentieren
    (Reihenfolge der Schrauben, Kabelwege)
@@ -329,36 +254,26 @@ primärer Workflow.
 4. Elektronik "auf dem Tisch" aufbauen und komplett testen (Pi Zero, TFT,
    Kamera, Pico-Tastaturadapter, Akku/Lade-Platine), **bevor** irgendetwas
    verklebt wird
-5. Kiosk-Software (Hauptmenü + vier Apps) entwickeln und auf dem offenen
-   Aufbau durchtesten, inkl. Claude-API-Anbindung mit echtem WLAN
+5. Software-Image vorbereiten und durchtesten
 6. Erst dann alles ins Gehäuse einbauen, Kabel fixieren, Gehäuse schließen
 7. Finaler Test, Nacharbeiten an Tastenbelegung/Software
 
-## 12. Risiken / Stolpersteine
+## 10. Risiken / Stolpersteine
 
 - **Zeitaufwand für Tastatur-Matrix** wird häufig unterschätzt – hier
   realistisch mehrere Abende einplanen
 - **WLAN-Reichweite** kann durch die metallische Batteriefach-Umgebung
   leiden – Antenne des Pi Zero möglichst frei/außen positionieren
-  (Kunststoffbereich, kein Metall in der Nähe); besonders relevant, da die
-  Claude-Anbindung ohne WLAN nicht funktioniert
+  (Kunststoffbereich, kein Metall in der Nähe)
 - **Akkusicherheit**: LiPo nur mit passender Lade-/Schutzschaltung
   verwenden, nicht direkt an den Pi hängen
 - **Kamera-Kabel** ist die zerbrechlichste Verbindung im ganzen Aufbau –
   beim Einbau nicht knicken/quetschen, Zugentlastung einplanen
-- **Texteingabe ist und bleibt langsam** (ALPHA-Tastenebene statt
-  Volltastatur) – deshalb bewusst "Scan & Frag" (Kap. 9.4) als
-  Haupt-Interaktionsweg mit Claude, nicht Freitext-Chat
-- **PDF-/Bildverarbeitung auf schwacher Hardware**: Pi Zero 2 W hat nur
-  512 MB RAM – Thumbnails/PDF-Seiten vorab rendern und cachen statt live
-  bei jedem Aufruf neu zu berechnen
-- **API-Key-Sicherheit**: Datei mit eingeschränkten Rechten, nicht ins
-  Firmware-Image einbacken, das öffentlich geteilt werden könnte
 - **Gehäuse-Modifikation** (Fräsen/Dremeln für USB-C-Ladebuchse,
   Kamera-Öffnung, ggf. microSD-Zugang) ist optisch der schwierigste Teil –
   lieber einmal mehr Maß nehmen als zweimal schneiden
 
-## 13. Nächste konkrete Schritte
+## 11. Nächste konkrete Schritte
 
 - [ ] Exakte Modellbezeichnung des Spendergeräts bestätigen (fx-CG20 oder
       fx-CG50, ggf. Foto/Rückseite prüfen)
@@ -370,8 +285,3 @@ primärer Workflow.
 - [ ] Mit Kap. 6/Variante A (Tastaturmatrix) als ersten elektronischen
       Meilenstein starten – das ist der unsicherste Teil und sollte zuerst
       geklärt werden
-- [ ] Grundgerüst der Kiosk-App (Hauptmenü + Umschalten zwischen den vier
-      Apps) früh aufsetzen, bevor die einzelnen Apps im Detail gebaut
-      werden – legt die Navigation (Kap. 8) fest, auf der alles andere
-      aufbaut
-- [ ] Anthropic-API-Key besorgen und sicher ablegen (Kap. 9.4)
