@@ -15,6 +15,19 @@ bieten) zu einem funktionsfähigen Mini-Cyberdeck auf Basis eines
 ## 1. Zieldefinition
 
 - Voll funktionsfähiger Mini-Computer im Gehäuse eines Casio-Taschenrechners
+- **Bedienung wie im Original**: Ein Hauptmenü mit Icons/Menüpunkten,
+  Navigation per Pfeiltasten + EXE, genau wie beim originalen Casio-OS –
+  keine "PC-artige" Fensterverwaltung (siehe Kap. 8)
+- Vier Kernanwendungen über das Hauptmenü erreichbar:
+  1. **Taschenrechner** – die originale Funktionalität des Geräts bleibt
+     vollständig erhalten
+  2. **Galerie** – Fotos ansehen, die mit der rückseitigen Kamera
+     aufgenommen wurden
+  3. **Dokumentenbrowser** – Text-/Markdown-/PDF-Dateien auf der SD-Karte
+     durchsuchen und anzeigen
+  4. **Claude-Assistent** – direkte Anbindung an die Claude-API, u. a. um
+     mit der Kamera fotografierte Dokumente/Notizen auswerten zu lassen
+- Akkubetrieb, Ladung über USB-C
 - Raspberry Pi OS Lite (Terminal) oder minimaler Desktop, Fokus auf
   Retro-/Terminal-Ästhetik statt Vollwertigkeit
 - Wenn möglich: Originaltastatur des Rechners als Eingabegerät weiterverwenden
@@ -57,12 +70,17 @@ Antennenbereich. Realistische Engpässe:
    fliegende Verkabelung direkt an die eMMC/SD-Pads, falls vorhanden).
 2. **Antenne**: Der Pi Zero 2 W hat eine kleine PCB-Antenne oben links –
    die sollte nicht direkt unter/neben Metall (Batteriekontakte!) liegen,
+   sonst leidet WLAN/BT-Reichweite spürbar (wichtig, da die Claude-Anbindung
+   ohne WLAN nicht funktioniert).
    sonst leidet WLAN/BT-Reichweite spürbar.
 3. **Display-Anschluss**: Ein kleines Display (siehe Kap. 5) braucht meist
    einen FPC- oder Pfostenstecker, der zusätzliche Höhe braucht.
 4. **Akku**: LiPo-Pouch-Zellen sind flach und lassen sich gut in
    Freiräumen (z. B. wo früher 4×AAA-Batterien saßen) unterbringen.
 5. **Kamera-Kabel**: Das CSI-Flachbandkabel zum Pi Zero ist sehr kurz und
+   knickempfindlich – bei rückseitiger Montage (siehe Kap. 7) muss es quer
+   durchs Gehäuse zur Rückschale geführt werden, ohne die Hauptplatine oder
+   die Tastaturmatrix zu blockieren.
    knickempfindlich – die Kameraplatine muss nah am Pi verbaut werden bzw.
    ein längeres/dünneres Zero-Kamerakabel eingeplant werden (siehe Kap. 7).
 
@@ -76,6 +94,21 @@ sparen. Das ist bei den meisten Cyberdeck-Umbauten dieser Größenordnung
 
 | Komponente | Vorschlag | Hinweis |
 |---|---|---|
+| SBC | Raspberry Pi Zero 2 W | WLAN/BT integriert, für Claude-Anbindung zwingend nötig |
+| Speicher | microSD 32–64 GB (A1/A2) | hochwertige Karte, Platz für OS + Fotos + Dokumente |
+| Display | 2,4"–3,5" SPI-TFT (z. B. Waveshare, ILI9341/ST7789) oder das Original-LCD, falls ansteuerbar | Original-LCD ansteuern ist sehr aufwendig (proprietärer Controller, kaum dokumentiert) → **Empfehlung: kleines SPI-TFT einbauen**, das ungefähr in die alte Displayöffnung passt |
+| Tastatur | Original-Tastenmatrix + eigener Matrix-Scanner (z. B. über GPIO + Software wie `matrix-keyboard`/Custom-Python-Daemon, oder ein kleiner Mikrocontroller wie ATtiny/Pi Pico als USB-HID-Keyboard-Adapter) | siehe Kap. 6 |
+| Strom | LiPo-Akku 1000–2000 mAh + Lade-/Boost-Platine (z. B. PiSugar 2/3 für Zero, oder TP4056 + separater 5V-Boost-Converter) | PiSugar ist am wartungsärmsten (Laden, Boost, Ein/Aus-Knopf in einem) |
+| Kamera | Raspberry Pi Camera Module 3 (Autofokus) oder kompaktere/günstigere Alternative (z. B. Arducam-Mini-Modul mit OV5647/IMX219) | braucht das **Pi-Zero-spezifische CSI-Kabel** (schmalerer 22-auf-15-Pin-Stecker als beim normalen Pi) – rückseitig montiert, siehe Kap. 7 |
+| Audio (optional) | kleiner I2S-DAC/Verstärker (z. B. MAX98357A) + Mini-Lautsprecher | Pi Zero hat keinen analogen Audio-Ausgang |
+| Kühlung | keine aktive Kühlung nötig, ggf. dünnes Kupfer-Shim auf dem SoC | Pi Zero 2 W wird bei Dauerlast (Kamera + Netzwerk) handwarm |
+| Sonstiges | dünne JST-Kabel, Kapton-Tape, ggf. 3D-gedrucktes Halterahmen für Display/Pi/Kamera | FDM-Druck reicht |
+
+Geschätzte Hardware-Kosten (ohne vorhandene Werkzeuge): **70–110 €**, je
+nachdem ob PiSugar (teurer, aber komfortabel) oder Eigenbau-Powerbank-Lösung,
+und welches Kameramodul gewählt wird. Dazu kommen **laufende Kosten für die
+Claude-API** (siehe Kap. 9.4) – die fallen nur bei tatsächlicher Nutzung an,
+nicht im Standby.
 | SBC | Raspberry Pi Zero 2 W | WLAN/BT integriert |
 | Speicher | microSD 32–64 GB (A1/A2) | hochwertige Karte, Lite-OS reicht klein |
 | Display | 2,4"–3,5" SPI-TFT (z. B. Waveshare, ILI9341/ST7789) oder das Original-LCD, falls ansteuerbar | Original-LCD ansteuern ist sehr aufwendig (proprietärer Controller, kaum dokumentiert) → **Empfehlung: kleines SPI-TFT einbauen**, das ungefähr in die alte Displayöffnung passt |
@@ -100,6 +133,9 @@ welches Kameramodul gewählt wird.
    sind günstig, gut von Raspberry Pi OS unterstützt (fbtft/DRM-Treiber) und
    lassen sich mit wenig Aufwand hinter die alte Displayöffnung setzen
    (ggf. Öffnung leicht anpassen).
+3. **E-Ink** – stromsparend, aber zu träge für ein interaktives Menü und für
+   den Kamera-/Galerie-Anwendungsfall ungeeignet (kein Live-Preview beim
+   Fotografieren) – daher hier nicht empfohlen.
 3. **E-Ink** – stromsparend, aber zu träge für ein interaktives Terminal;
    höchstens als sekundäres Status-Display sinnvoll.
 
@@ -118,6 +154,9 @@ Flex-Folie, kontaktiert über eine Folienleiste). Zwei realistische Wege:
   Tastatur** meldet – entkoppelt Timing-Probleme vom Hauptsystem und ist die
   in der Cyberdeck-Szene übliche Lösung)
 - Tastenbelegung (Zahlen, Funktionstasten, Cursor) per Keymap auf sinnvolle
+  Terminal-/Anwendungstasten legen (z. B. SHIFT+Zahl → Sonderzeichen,
+  EXE → Enter, ALPHA → Buchstabenebene für Texteingabe, MENU → zurück zum
+  Hauptmenü)
   Terminal-Tasten legen (z. B. SHIFT+Zahl → Sonderzeichen, EXE → Enter)
 
 **B) Fertige Mini-Tastatur einbauen (einfacher, weniger "Original")**

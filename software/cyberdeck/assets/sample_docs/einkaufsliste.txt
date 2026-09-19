@@ -1,0 +1,6 @@
+Einkaufsliste
+-------------
+- Loetzinn
+- LiPo-Akku 1200 mAh
+- Pi-Zero-Kamerakabel (15 cm)
+- Raspberry Pi Pico
