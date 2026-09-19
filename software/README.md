@@ -31,6 +31,26 @@ Claude-Screen zeigt dann eine Fehlermeldung statt einer echten Antwort.
 | **C** (in Galerie/Dateien) | "Scan & Frag": aktuelles Foto/Dokument an Claude senden |
 | **T** (im Claude-Screen) | Freitext-Frage eintippen |
 
+### Rechner-Screen (zusätzlich zu den obigen Tasten)
+
+| Taste | Bedeutung |
+|---|---|
+| Buchstaben/Zahlen/Operatoren tippen | Ausdruck eingeben, z. B. `sin(30)`, `2pi`, `5!`, `sqrt(16)` |
+| **F2** | Grad/Radiant umschalten (Anzeige oben rechts) |
+| **F3** | letztes Ergebnis (`ans`) in den Ausdruck einfügen |
+| **F4** / **F5** / **F6** | Speicher M+ / MR (`mem` einfügen) / MC (löschen) |
+| **F7** | Graph-Modus: `y = f(x)` eingeben und plotten |
+| Pfeiltasten (im Graph-Plot) | Ansicht verschieben (Pan) |
+| **+** / **-** (im Graph-Plot) | Rein-/Rauszoomen |
+
+Unterstützte Funktionen: `sin cos tan asin acos atan sinh cosh tanh asinh
+acosh atanh log ln log2 sqrt cbrt root(n,x) abs fact npr ncr`, Konstanten
+`pi e`, sowie `ans`/`mem`. **Nicht enthalten** (bewusst außerhalb des
+Rahmens dieses Prototyps, vergleichbar mit dem CAS-Umfang mancher
+TI-84-Nachbauten wie [OpenCalc](https://github.com/CoryPearl/opencalc)):
+Gleichungslöser, Matrizen, komplexe Zahlen, symbolisches Ableiten/
+Integrieren, Wertetabellen.
+
 ## Claude-Anbindung testen
 
 ```bash

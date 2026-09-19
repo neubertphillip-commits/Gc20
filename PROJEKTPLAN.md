@@ -240,13 +240,29 @@ weitergereicht.
 
 ### 9.1 Taschenrechner
 
-- Reproduziert die originale Kernfunktion des Geräts (Grundrechenarten,
-  wissenschaftliche Funktionen, ggf. einfache Graphen)
-- Rechenkern z. B. mit `asteval` oder `sympy` (Python), keine eigene
-  Parser-Implementierung nötig
-- Tastenbelegung so nah wie möglich am Original halten (SHIFT/ALPHA-Ebenen
-  wie beim fx-CG50), damit sich das Gerät weiterhin wie ein Taschenrechner
-  bedienen lässt
+Umfang orientiert sich an dem, was Community-Nachbauten von Grafikrechnern
+(z. B. TI-84-Plus-Klone) an Kernfunktionen typischerweise abdecken – im
+[Prototyp](../software/README.md) bereits umgesetzt:
+
+- **Wissenschaftlicher Rechenkern** (eigener, sicherer AST-Interpreter statt
+  `eval()`/`exec()` – siehe `software/cyberdeck/mathengine.py`):
+  Grundrechenarten, Trigonometrie (inkl. Umkehr-/Hyperbelfunktionen,
+  Grad/Radiant umschaltbar), Logarithmen (`log`/`ln`/`log2`),
+  Wurzeln/Potenzen (`sqrt`, `cbrt`, `root(n,x)`, `^`), Fakultät (`5!`),
+  Kombinatorik (`nPr`, `nCr`), Speicher (M+/MR/MC) und `ans` für das letzte
+  Ergebnis. Implizite Multiplikation (`2pi`, `3(1+2)`) wird wie beim Original
+  automatisch aufgelöst.
+- **Graph-Modus**: `y = f(x)` eingeben, Funktion wird geplottet, mit
+  Pan/Zoom über Pfeiltasten und `+`/`-` – das Kernmerkmal eines
+  *Grafik*rechners.
+- **Bewusst nicht enthalten** (deutlich größerer Aufwand, vergleichbar mit
+  dem CAS-Umfang mancher TI-84-Nachbauten wie
+  [OpenCalc](https://github.com/CoryPearl/opencalc)): Gleichungslöser,
+  Matrizen, komplexe Zahlen, symbolisches Ableiten/Integrieren,
+  Wertetabellen. Bei Bedarf als eigener Ausbauschritt möglich.
+- Tastenbelegung perspektivisch so nah wie möglich am Original halten
+  (SHIFT/ALPHA-Ebenen wie beim fx-CG50), damit sich das Gerät weiterhin wie
+  ein Taschenrechner bedienen lässt.
 
 ### 9.2 Galerie
 
