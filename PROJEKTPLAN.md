@@ -20,6 +20,8 @@ bieten) zu einem funktionsfähigen Mini-Cyberdeck auf Basis eines
 - Wenn möglich: Originaltastatur des Rechners als Eingabegerät weiterverwenden
   (das ist der optisch und thematisch spannendste Teil des Umbaus)
 - Akkubetrieb, Ladung über USB-C
+- **Kamera** für Foto/Video bzw. Webcam-Funktion (z. B. für Videocalls,
+  QR-Codes scannen, einfache Bildverarbeitung) – siehe Kap. 7
 - Nice-to-have: Original-Batteriefach als Ladeport/Schalter-Attrappe nutzen
 
 ## 2. Gehäusewahl: fx-CG20 vs. fx-CG50
@@ -60,6 +62,9 @@ Antennenbereich. Realistische Engpässe:
    einen FPC- oder Pfostenstecker, der zusätzliche Höhe braucht.
 4. **Akku**: LiPo-Pouch-Zellen sind flach und lassen sich gut in
    Freiräumen (z. B. wo früher 4×AAA-Batterien saßen) unterbringen.
+5. **Kamera-Kabel**: Das CSI-Flachbandkabel zum Pi Zero ist sehr kurz und
+   knickempfindlich – die Kameraplatine muss nah am Pi verbaut werden bzw.
+   ein längeres/dünneres Zero-Kamerakabel eingeplant werden (siehe Kap. 7).
 
 Realistischer Ansatz: Nicht versuchen, alles "unsichtbar" reinzuquetschen,
 sondern **Gehäuse minimal modifizieren** (Rückseite an einer Stelle
@@ -76,12 +81,14 @@ sparen. Das ist bei den meisten Cyberdeck-Umbauten dieser Größenordnung
 | Display | 2,4"–3,5" SPI-TFT (z. B. Waveshare, ILI9341/ST7789) oder das Original-LCD, falls ansteuerbar | Original-LCD ansteuern ist sehr aufwendig (proprietärer Controller, kaum dokumentiert) → **Empfehlung: kleines SPI-TFT einbauen**, das ungefähr in die alte Displayöffnung passt |
 | Tastatur | Original-Tastenmatrix + eigener Matrix-Scanner (z. B. über GPIO + Software wie `matrix-keyboard`/Custom-Python-Daemon, oder ein kleiner Mikrocontroller wie ATtiny/Pi Pico als USB-HID-Keyboard-Adapter) | siehe Kap. 6 |
 | Strom | LiPo-Akku 1000–2000 mAh + Lade-/Boost-Platine (z. B. PiSugar 2/3 für Zero, oder TP4056 + separater 5V-Boost-Converter) | PiSugar ist am wartungsärmsten (Laden, Boost, Ein/Aus-Knopf in einem) |
+| Kamera | Raspberry Pi Camera Module 3 (Autofokus) oder kompaktere/günstigere Alternative (z. B. Arducam-Mini-Modul mit OV5647/IMX219) | braucht das **Pi-Zero-spezifische CSI-Kabel** (schmalerer 22-auf-15-Pin-Stecker als beim normalen Pi) – siehe Kap. 7 |
 | Audio (optional) | kleiner I2S-DAC/Verstärker (z. B. MAX98357A) + Mini-Lautsprecher | Pi Zero hat keinen analogen Audio-Ausgang |
 | Kühlung | keine aktive Kühlung nötig, ggf. dünnes Kupfer-Shim auf dem SoC | Pi Zero 2 W wird bei Dauerlast handwarm |
-| Sonstiges | dünne JST-Kabel, Kapton-Tape, ggf. 3D-gedrucktes Halterahmen für Display/Pi | FDM-Druck reicht |
+| Sonstiges | dünne JST-Kabel, Kapton-Tape, ggf. 3D-gedrucktes Halterahmen für Display/Pi/Kamera | FDM-Druck reicht |
 
-Geschätzte Kosten (ohne vorhandene Werkzeuge): **60–100 €**, je nachdem ob
-PiSugar (teurer, aber komfortabel) oder Eigenbau-Powerbank-Lösung.
+Geschätzte Kosten (ohne vorhandene Werkzeuge): **70–110 €**, je nachdem ob
+PiSugar (teurer, aber komfortabel) oder Eigenbau-Powerbank-Lösung, und
+welches Kameramodul gewählt wird.
 
 ## 5. Display-Optionen
 
@@ -122,7 +129,50 @@ Flex-Folie, kontaktiert über eine Folienleiste). Zwei realistische Wege:
 **Empfehlung:** Variante A mit Pi Pico als USB-HID-Adapter – guter Kompromiss
 aus Aufwand und Ergebnis, und der Pico kostet nur ein paar Euro.
 
-## 7. Software-Stack
+## 7. Kamera-Integration
+
+Der Pi Zero 2 W hat einen eigenen, kleineren **CSI-Kameraanschluss** (nicht
+kompatibel mit dem Standard-Kamerakabel des "großen" Pi) – dafür braucht man
+ein **Pi-Zero-Kamerakabel** (gibt es in mehreren Längen, z. B. 15 cm),
+zusätzlich zum eigentlichen Kameramodul.
+
+**Modulwahl:**
+1. **Raspberry Pi Camera Module 3** – aktuelle, offiziell unterstützte Wahl
+   mit Autofokus, aber Platine/Gehäuse etwas größer.
+2. **Kompaktere Drittanbieter-Module** (z. B. Arducam-Mini-Boards mit
+   OV5647/IMX219-Sensor) – kleinere Grundfläche, oft ohne Gehäuse, dadurch
+   leichter in einer 3D-gedruckten Halterung unterzubringen. Für dieses
+   Projekt aufgrund des begrenzten Platzes eher zu empfehlen als Modul 3.
+
+**Platzierung im Gehäuse** – zwei sinnvolle Varianten:
+- **Frontseitig, oberhalb des Displays** (Webcam-Stil): gute Wahl, wenn die
+  Kamera hauptsächlich für Videocalls/Selfie-Nutzung gedacht ist. Erfordert
+  eine kleine Bohrung/Öffnung im oberen Gehäuserand, dort ist bei den
+  Prizm-Gehäusen meist ohnehin schon wenig Elektronik verbaut (guter
+  Freiraum in der Nähe der oberen Displaykante).
+- **Rückseitig** (Foto-Kamera-Stil): bessere Bildqualität für "richtige"
+  Fotos, aber unpraktisch, wenn man während der Nutzung gleichzeitig aufs
+  Display schaut. Erfordert eine Öffnung in der Rückschale.
+
+**Empfehlung:** Frontseitig oberhalb des Displays, analog zur Webcam an
+einem Laptop – passt am besten zur "Terminal/Cyberdeck"-Nutzung.
+
+**Software:** `libcamera`/`rpicam-apps` (in aktuellem Raspberry Pi OS
+enthalten), z. B. `rpicam-still`/`rpicam-vid` für Fotos/Video; für
+Videocalls oder eigene Anwendungen lässt sich der Kamera-Stream auch per
+`v4l2` in andere Tools einspeisen.
+
+**Zu beachten:**
+- Kamera-Kabel ist die zusätzliche Zwangsbedingung aus Kap. 3, Punkt 5 –
+  Kameraposition und Pi-Zero-Position im Gehäuse aufeinander abstimmen,
+  bevor die 3D-Halterung konstruiert wird.
+- Zusätzlicher Stromverbrauch bei aktiver Kamera/Videostreaming –
+  bei der Akkukapazität (Kap. 4) etwas Puffer einplanen (z. B. eher
+  2000 mAh statt 1000 mAh, wenn Video-Streaming ein häufiger Use-Case ist).
+- Kleine Blendöffnung im Gehäuse so groß wie nötig, aber so klein wie
+  möglich schneiden – Streulicht/Kratzer auf der Linse vermeiden.
+
+## 8. Software-Stack
 
 - **Raspberry Pi OS Lite (64-bit)** als Basis
 - Boot direkt in ein Terminal-UI, z. B.:
@@ -134,22 +184,23 @@ aus Aufwand und Ergebnis, und der Pico kostet nur ein paar Euro.
 - Display-Treiber (fbcp-ili9341 oder passenden DRM-Treiber je nach TFT)
 - USB-HID-Tastatur (falls Variante A/Pico) braucht keinen Treiber – wird
   vom Kernel als normale Tastatur erkannt
+- Kamera-Support über `libcamera`/`rpicam-apps` (siehe Kap. 7)
 
-## 8. Mechanischer Bauablauf (grober Fahrplan)
+## 9. Mechanischer Bauablauf (grober Fahrplan)
 
 1. Spender-Rechner zerlegen, alle Teile fotografieren/dokumentieren
    (Reihenfolge der Schrauben, Kabelwege)
-2. Innenmaße final vermessen, 3D-Halterung für Pi Zero + TFT + Akku
+2. Innenmaße final vermessen, 3D-Halterung für Pi Zero + TFT + Kamera + Akku
    konstruieren (Fusion360/FreeCAD reicht) und drucken
 3. Tastaturmatrix durchmessen und Pinbelegung dokumentieren
 4. Elektronik "auf dem Tisch" aufbauen und komplett testen (Pi Zero, TFT,
-   Pico-Tastaturadapter, Akku/Lade-Platine), **bevor** irgendetwas verklebt
-   wird
+   Kamera, Pico-Tastaturadapter, Akku/Lade-Platine), **bevor** irgendetwas
+   verklebt wird
 5. Software-Image vorbereiten und durchtesten
 6. Erst dann alles ins Gehäuse einbauen, Kabel fixieren, Gehäuse schließen
 7. Finaler Test, Nacharbeiten an Tastenbelegung/Software
 
-## 9. Risiken / Stolpersteine
+## 10. Risiken / Stolpersteine
 
 - **Zeitaufwand für Tastatur-Matrix** wird häufig unterschätzt – hier
   realistisch mehrere Abende einplanen
@@ -158,16 +209,20 @@ aus Aufwand und Ergebnis, und der Pico kostet nur ein paar Euro.
   (Kunststoffbereich, kein Metall in der Nähe)
 - **Akkusicherheit**: LiPo nur mit passender Lade-/Schutzschaltung
   verwenden, nicht direkt an den Pi hängen
+- **Kamera-Kabel** ist die zerbrechlichste Verbindung im ganzen Aufbau –
+  beim Einbau nicht knicken/quetschen, Zugentlastung einplanen
 - **Gehäuse-Modifikation** (Fräsen/Dremeln für USB-C-Ladebuchse,
-  ggf. microSD-Zugang) ist optisch der schwierigste Teil – lieber einmal
-  mehr Maß nehmen als zweimal schneiden
+  Kamera-Öffnung, ggf. microSD-Zugang) ist optisch der schwierigste Teil –
+  lieber einmal mehr Maß nehmen als zweimal schneiden
 
-## 10. Nächste konkrete Schritte
+## 11. Nächste konkrete Schritte
 
 - [ ] Exakte Modellbezeichnung des Spendergeräts bestätigen (fx-CG20 oder
       fx-CG50, ggf. Foto/Rückseite prüfen)
 - [ ] Gerät besorgen (idealerweise defektes Display, funktionierende Tasten)
 - [ ] Zerlegen, Innenraum vermessen und fotografieren
+- [ ] Kameramodul und -position festlegen (Kap. 7) – beeinflusst die
+      3D-Halterung und die Position des Pi Zero direkt
 - [ ] BOM final bestellen (Kap. 4)
 - [ ] Mit Kap. 6/Variante A (Tastaturmatrix) als ersten elektronischen
       Meilenstein starten – das ist der unsicherste Teil und sollte zuerst
