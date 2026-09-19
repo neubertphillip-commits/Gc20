@@ -76,9 +76,10 @@ Antennenbereich. Realistische Engpässe:
 
 Realistischer Ansatz: Nicht versuchen, alles "unsichtbar" reinzuquetschen,
 sondern **Gehäuse minimal modifizieren** (Rückseite an einer Stelle
-aufdicken/3D-gedrucktes Zwischenteil einsetzen), statt an der Elektronik zu
-sparen. Das ist bei den meisten Cyberdeck-Umbauten dieser Größenordnung
-üblich und ehrlicher als "es passt gerade so".
+aufdicken/Zwischenstück einsetzen – dafür braucht es keinen 3D-Drucker,
+siehe Kap. 7a), statt an der Elektronik zu sparen. Das ist bei den meisten
+Cyberdeck-Umbauten dieser Größenordnung üblich und ehrlicher als "es passt
+gerade so".
 
 ## 4. Stückliste (BOM)
 
@@ -92,7 +93,8 @@ sparen. Das ist bei den meisten Cyberdeck-Umbauten dieser Größenordnung
 | Kamera | Raspberry Pi Camera Module 3 (Autofokus) oder kompaktere/günstigere Alternative (z. B. Arducam-Mini-Modul mit OV5647/IMX219) | braucht das **Pi-Zero-spezifische CSI-Kabel** (schmalerer 22-auf-15-Pin-Stecker als beim normalen Pi) – rückseitig montiert, siehe Kap. 7 |
 | Audio (optional) | kleiner I2S-DAC/Verstärker (z. B. MAX98357A) + Mini-Lautsprecher | Pi Zero hat keinen analogen Audio-Ausgang |
 | Kühlung | keine aktive Kühlung nötig, ggf. dünnes Kupfer-Shim auf dem SoC | Pi Zero 2 W wird bei Dauerlast (Kamera + Netzwerk) handwarm |
-| Sonstiges | dünne JST-Kabel, Kapton-Tape, ggf. 3D-gedrucktes Halterahmen für Display/Pi/Kamera | FDM-Druck reicht |
+| Befestigung | doppelseitiges Montageklebeband (VHB), Heißkleber, M2/M2.5-Abstandshalter (Messing/Nylon) aus dem Elektronikbedarf, Klettband für den Akku | kein 3D-Drucker nötig – siehe Kap. 7a |
+| Sonstiges | dünne JST-Kabel, Kapton-Tape | – |
 
 Geschätzte Hardware-Kosten (ohne vorhandene Werkzeuge): **70–110 €**, je
 nachdem ob PiSugar (teurer, aber komfortabel) oder Eigenbau-Powerbank-Lösung,
@@ -173,7 +175,8 @@ zusätzlich zum eigentlichen Kameramodul.
 - Kleine Bohrung/Fräsung in der Rückschale, an einer Stelle mit möglichst
   viel Freiraum dahinter (bei den Prizm-Gehäusen meist im oberen Drittel,
   wo früher keine Batterien lagen)
-- Kameraplatine mit 3D-gedrucktem Rahmen fixieren, Linse plan mit der
+- Kameraplatine fixieren (ohne 3D-Drucker: doppelseitiges Klebeband oder
+  ein handgeformter Ring aus Epoxidknete, siehe Kap. 7a), Linse plan mit der
   Gehäuseoberfläche oder minimal vertieft (Kratzschutz)
 - Kabelführung so planen, dass sie beim Öffnen/Schließen des Gehäuses nicht
   eingeklemmt wird
@@ -190,6 +193,25 @@ Video wird für diesen Use-Case nicht gebraucht.
   einplanen (eher 2000 mAh als 1000 mAh)
 - Kleine Blendöffnung in der Rückschale so groß wie nötig, aber so klein wie
   möglich schneiden – Streulicht/Kratzer auf der Linse vermeiden
+
+## 7a. Befestigung ohne 3D-Drucker
+
+3D-Druck ist bei Cyberdeck-Umbauten üblich, aber keine Voraussetzung – für
+jede Baugruppe gibt es eine Lösung mit Standardmaterial aus dem Bastel-
+bzw. Elektronikbedarf:
+
+| Baugruppe | Befestigung ohne 3D-Drucker | Hinweis |
+|---|---|---|
+| Pi Zero, TFT, Kameraplatine | **Doppelseitiges Montageklebeband (VHB/3M)** | dünn genug fürs enge Gehäuse, hält zuverlässig – wird auch bei 3D-gedruckten Builds oft für die letzte Fixierung genutzt |
+| Abstandshalter (Platine darf z. B. nicht auf der Tastaturmatrix aufliegen) | **Fertige M2/M2.5-Abstandshalter** (Messing/Nylon) aus dem Elektronikbedarf | wenige Euro im Set, werden verschraubt oder mit Sekundenkleber fixiert; alternativ **originale Schraubdome** im Gehäuse wiederverwenden, wo früher die Hauptplatine saß |
+| Unregelmäßige Passungen (z. B. Kamerafassung, Lückenausgleich) | **2-Komponenten-Modelliermasse** (Epoxidknete wie Milliput, oder Sugru), von Hand um das Bauteil geformt und ausgehärtet | im Prinzip "3D-Druck von Hand" – härtet in wenigen Stunden fest |
+| Einfache Distanzstücke/Rahmen | **Plasticard/Polystyrol-Reste** aus dem Bastelbedarf, mit Cutter zugeschnitten und mit Plastikkleber verklebt | für gerade Formen ausreichend |
+| Akku | **Klettband** statt Kleben | bleibt reversibel – wichtig, falls die LiPo-Zelle später getauscht werden muss |
+| Kabelmanagement | **Kabelbinder** durch vorhandene Löcher/Schraubdome, oder kleine Klebepads mit Kabelschlaufe | – |
+
+Wo im weiteren Dokument "3D-gedruckt" steht, ist das also als Option zu
+verstehen, nicht als Voraussetzung – die Tabelle oben deckt jede Stelle ab,
+an der sonst ein Halterahmen gedruckt würde.
 
 ## 8. Bedienkonzept: Menü-Navigation
 
@@ -300,8 +322,8 @@ primärer Workflow.
 
 1. Spender-Rechner zerlegen, alle Teile fotografieren/dokumentieren
    (Reihenfolge der Schrauben, Kabelwege)
-2. Innenmaße final vermessen, 3D-Halterung für Pi Zero + TFT + Kamera + Akku
-   konstruieren (Fusion360/FreeCAD reicht) und drucken; Kameraposition in
+2. Innenmaße final vermessen, Befestigung für Pi Zero + TFT + Kamera + Akku
+   festlegen (3D-Druck oder die Alternativen aus Kap. 7a); Kameraposition in
    der Rückschale festlegen
 3. Tastaturmatrix durchmessen und Pinbelegung dokumentieren
 4. Elektronik "auf dem Tisch" aufbauen und komplett testen (Pi Zero, TFT,
@@ -343,7 +365,7 @@ primärer Workflow.
 - [ ] Gerät besorgen (idealerweise defektes Display, funktionierende Tasten)
 - [ ] Zerlegen, Innenraum vermessen und fotografieren
 - [ ] Kameraposition in der Rückschale festlegen (Kap. 7) – beeinflusst die
-      3D-Halterung und die Position des Pi Zero direkt
+      Befestigung (Kap. 7a) und die Position des Pi Zero direkt
 - [ ] BOM final bestellen (Kap. 4)
 - [ ] Mit Kap. 6/Variante A (Tastaturmatrix) als ersten elektronischen
       Meilenstein starten – das ist der unsicherste Teil und sollte zuerst
